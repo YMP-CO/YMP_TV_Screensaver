@@ -241,6 +241,33 @@ body.offline #offline-message {
 .photo-grid::-webkit-scrollbar {
   width: 8px;
 }
+
+.privacy-link {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 14px;
+    font-family: 'Open Sans', sans-serif;
+    transition: all 0.3s ease;
+    padding: 10px;
+    border-radius: 4px;
+    outline: none;
+}
+
+.privacy-link:hover,
+.privacy-link:focus {
+    color: rgba(255, 255, 255, 1);
+    text-decoration: underline;
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+.privacy-link:active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
 .photo-grid::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 4px;
@@ -267,7 +294,7 @@ body.offline #offline-message {
 
 <body>
   <div id="offline-message">No internet connection</div>
-
+<a href="https://ymp-co.github.io/YMP_TV_Screensaver/privacy_policy.html" class="privacy-link" tabindex="0">Privacy policy</a>	
   <div id="time-container">
     <div class="background"></div>
     <div id="clock"></div>
@@ -283,12 +310,14 @@ body.offline #offline-message {
     <button id="logout-button" class="mdl-button logout mdl-js-button mdl-js-ripple-effect" style="display: none;" tabindex="0">
       Exit from account
     </button>
+
   </div>
 
   <div id="photo-dialog">
     <button id="close-button" title="Close" tabindex="0">×</button>
     <div class="title">Choose image from, Google Photos:</div>
     <div class="photo-grid" id="photo-grid" tabindex="0"></div>
+
   </div>
 <script>
 if ('serviceWorker' in navigator) {
@@ -308,6 +337,9 @@ const REDIRECT_URI = 'https://ymp-co.github.io/YMP_TV_Screensaver/PhotoTvScreens
 const SCOPE = 'https://www.googleapis.com/auth/photoslibrary.readonly';
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const CACHE_NAME = 'photo-viewer-cache-v1';
+
+
+
 
 let accessToken = null;
 let photos = [];
