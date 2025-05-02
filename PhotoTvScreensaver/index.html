@@ -252,6 +252,7 @@
       align-items: center;
       justify-content: center;
       transition: background-color 0.2s ease;
+      z-index: 2;
     }
     #close-button:hover,
     #close-button:focus {
@@ -455,7 +456,7 @@
   <div id="settings-dialog">
     <div class="title">
       Settings
-      <button id="settings-close-button" title="Close">×</button>
+      <button id="settings-close-button" title="Close" tabindex="0">×</button>
     </div>
     <div class="settings-group">
       <label for="slideshow-interval">Slideshow interval (seconds)</label>
@@ -514,6 +515,7 @@ let slideshowInterval = 30;
 let slideshowActive = false;
 let slideshowTimer = null;
 let fadeLock = false;
+
 function showOfflineMessage() {
   const message = document.getElementById('offline-message');
   message.style.display = 'block';
@@ -539,6 +541,7 @@ function updateOnlineStatus() {
 }
 window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
+
 function updateTime() {
   const now = new Date();
   document.getElementById('clock').textContent = now.toLocaleTimeString('ru-RU', {
@@ -549,6 +552,7 @@ function updateTime() {
 }
 setInterval(updateTime, 1000);
 updateTime();
+
 function openAuth() {
   const authUrl = `${AUTH_URL}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=token&scope=${SCOPE}`;
   window.location.href = authUrl;
@@ -568,57 +572,6 @@ async function fetchPhotos() {
   } catch (error) {
     console.error('Ошибка загрузки фотографий:', error);
     return [];
-  }
-}
-function handlePhotoNavigation(event) {
-  const photoGrid = document.getElementById('photo-grid');
-  const photos = Array.from(photoGrid.querySelectorAll('.photo-item'));
-  if (photos.length === 0) return;
-  const activePhoto = document.activeElement;
-  const currentIndex = photos.indexOf(activePhoto);
-  switch (event.key) {
-    case 'ArrowRight':
-    case 'Right':
-      event.preventDefault();
-      if (currentIndex < photos.length - 1) {
-        photos[currentIndex + 1].focus();
-      }
-      break;
-    case 'ArrowLeft':
-    case 'Left':
-      event.preventDefault();
-      if (currentIndex > 0) {
-        photos[currentIndex - 1].focus();
-      }
-      break;
-    case 'ArrowDown':
-    case 'Down':
-      event.preventDefault();
-      const nextRowIndex = currentIndex + 3;
-      if (nextRowIndex < photos.length) {
-        photos[nextRowIndex].focus();
-      }
-      break;
-    case 'ArrowUp':
-    case 'Up':
-      event.preventDefault();
-      const prevRowIndex = currentIndex - 3;
-      if (prevRowIndex >= 0) {
-        photos[prevRowIndex].focus();
-      }
-      break;
-    case 'Enter':
-    case 'Return':
-      event.preventDefault();
-      if (activePhoto) {
-        const photoIndex = photos.indexOf(activePhoto);
-        selectPhoto(photoIndex, activePhoto.querySelector('img').dataset.baseUrl);
-      }
-      break;
-    case 'Escape':
-      event.preventDefault();
-      closePhotoDialog();
-      break;
   }
 }
 function renderPhotos() {
@@ -674,14 +627,104 @@ function selectPhoto(index, baseUrl) {
   updatePhotoSelection();
   closePhotoDialog();
 }
+function updatePhotoSelection() {
+  const photoItems = document.querySelectorAll('.photo-item');
+  photoItems.forEach((item, index) => {
+    if (index === selectedIndex) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+}
+function loadCachedBackground() {
+  const cachedBackground = localStorage.getItem('backgroundImage');
+  if (cachedBackground) {
+    document.body.style.backgroundImage = `url(${cachedBackground})`;
+  }
+}
+function loadSettings() {
+  const savedInterval = localStorage.getItem('slideshowInterval');
+  if (savedInterval) {
+    slideshowInterval = parseInt(savedInterval);
+    document.getElementById('slideshow-interval').value = slideshowInterval;
+    document.getElementById('interval-value').textContent = slideshowInterval;
+  }
+  const savedSlideshowState = localStorage.getItem('slideshowActive');
+  if (savedSlideshowState === 'true') {
+    const button = document.getElementById('slideshow-toggle');
+    button.textContent = 'Stop Slideshow';
+    button.classList.add('active');
+  }
+}
+function restoreSlideshowState() {
+  const savedIndex = localStorage.getItem('selectedPhotoIndex');
+  if (savedIndex) {
+    selectedIndex = parseInt(savedIndex);
+  }
+  const savedSlideshowState = localStorage.getItem('slideshowActive');
+  if (savedSlideshowState === 'true' && photos.length > 0) {
+    startSlideshow();
+  }
+}
+function logout() {
+  localStorage.clear();
+  accessToken = null;
+  window.location.href = window.location.pathname;
+}
+function updateSlideshowInterval(value) {
+  slideshowInterval = parseInt(value);
+  document.getElementById('interval-value').textContent = value;
+  localStorage.setItem('slideshowInterval', slideshowInterval);
+  if (slideshowActive) {
+    stopSlideshow();
+    startSlideshow();
+  }
+}
+function stopSlideshow() {
+  slideshowActive = false;
+  localStorage.setItem('slideshowActive', 'false');
+  if (slideshowTimer) {
+    clearInterval(slideshowTimer);
+    slideshowTimer = null;
+  }
+}
+function startSlideshow() {
+  if (photos.length === 0) return;
+  slideshowActive = true;
+  localStorage.setItem('slideshowActive', 'true');
+  localStorage.setItem('slideshowInterval', slideshowInterval);
+  if (slideshowTimer) clearInterval(slideshowTimer);
+  slideshowTimer = setInterval(() => {
+    if (photos.length > 0) {
+      const nextIndex = (selectedIndex + 1) % photos.length;
+      fadeToBackground(`${photos[nextIndex].baseUrl}=d`, () => {
+        selectedIndex = nextIndex;
+        localStorage.setItem('backgroundImage', `${photos[nextIndex].baseUrl}=d`);
+        localStorage.setItem('selectedPhotoIndex', nextIndex);
+        updatePhotoSelection();
+      });
+    }
+  }, slideshowInterval * 1000);
+}
+
+function focusFirstVisible(elements) {
+  for (let el of elements) {
+    if (el && el.offsetParent !== null && el.tabIndex >= 0) {
+      el.focus();
+      return el;
+    }
+  }
+  return null;
+}
+
 function handleGlobalNavigation(event) {
   const visibleButtons = focusableElements
     .map(id => document.getElementById(id))
     .filter(element => element && element.style.display !== 'none');
   if (!visibleButtons.length) return;
-  if (!focusedElement) {
-    focusedElement = visibleButtons[0];
-    focusedElement.focus();
+  if (!focusedElement || focusedElement.tabIndex < 0 || focusedElement.offsetParent === null) {
+    focusedElement = focusFirstVisible(visibleButtons);
     return;
   }
   const currentIndex = visibleButtons.indexOf(focusedElement);
@@ -690,11 +733,18 @@ function handleGlobalNavigation(event) {
     case 'Up':
       event.preventDefault();
       focusedElement = visibleButtons[(currentIndex - 1 + visibleButtons.length) % visibleButtons.length];
+      focusedElement.focus();
       break;
     case 'ArrowDown':
     case 'Down':
       event.preventDefault();
       focusedElement = visibleButtons[(currentIndex + 1) % visibleButtons.length];
+      focusedElement.focus();
+      break;
+    case 'Tab':
+      event.preventDefault();
+      focusedElement = visibleButtons[(currentIndex + 1) % visibleButtons.length];
+      focusedElement.focus();
       break;
     case 'Enter':
     case 'Return':
@@ -702,8 +752,8 @@ function handleGlobalNavigation(event) {
       focusedElement.click();
       break;
   }
-  focusedElement.focus();
 }
+
 function handleSettingsNavigation(event) {
   const slider = document.getElementById('slideshow-interval');
   const toggleBtn = document.getElementById('slideshow-toggle');
@@ -715,6 +765,7 @@ function handleSettingsNavigation(event) {
   switch (event.key) {
     case 'ArrowDown':
     case 'Down':
+    case 'Tab':
       event.preventDefault();
       focusOrder[(idx + 1) % focusOrder.length].focus();
       break;
@@ -750,6 +801,90 @@ function handleSettingsNavigation(event) {
       break;
   }
 }
+
+function handlePhotoDialogNavigation(event) {
+  const dialog = document.getElementById('photo-dialog');
+  const closeBtn = document.getElementById('close-button');
+  const photoGrid = document.getElementById('photo-grid');
+  const photoItems = Array.from(photoGrid.querySelectorAll('.photo-item'));
+  const focusOrder = [closeBtn, ...photoItems];
+  let current = document.activeElement;
+  let idx = focusOrder.indexOf(current);
+  if (idx === -1) idx = 0;
+  switch (event.key) {
+    case 'ArrowRight':
+    case 'Right':
+      event.preventDefault();
+      if (current === closeBtn && photoItems.length > 0) {
+        photoItems[0].focus();
+      } else if (photoItems.includes(current)) {
+        let photoIdx = photoItems.indexOf(current);
+        if ((photoIdx + 1) % 3 !== 0 && photoIdx + 1 < photoItems.length) {
+          photoItems[photoIdx + 1].focus();
+        }
+      }
+      break;
+    case 'ArrowLeft':
+    case 'Left':
+      event.preventDefault();
+      if (current === closeBtn) {
+      } else if (photoItems.includes(current)) {
+        let photoIdx = photoItems.indexOf(current);
+        if (photoIdx % 3 === 0) {
+          closeBtn.focus();
+        } else if (photoIdx > 0) {
+          photoItems[photoIdx - 1].focus();
+        }
+      }
+      break;
+    case 'ArrowDown':
+    case 'Down':
+      event.preventDefault();
+      if (current === closeBtn && photoItems.length > 0) {
+        photoItems[0].focus();
+      } else if (photoItems.includes(current)) {
+        let photoIdx = photoItems.indexOf(current);
+        let nextIdx = photoIdx + 3;
+        if (nextIdx < photoItems.length) {
+          photoItems[nextIdx].focus();
+        }
+      }
+      break;
+    case 'ArrowUp':
+    case 'Up':
+      event.preventDefault();
+      if (current === closeBtn) {
+      } else if (photoItems.includes(current)) {
+        let photoIdx = photoItems.indexOf(current);
+        let prevIdx = photoIdx - 3;
+        if (prevIdx >= 0) {
+          photoItems[prevIdx].focus();
+        } else {
+          closeBtn.focus();
+        }
+      }
+      break;
+    case 'Tab':
+      event.preventDefault();
+      focusOrder[(idx + 1) % focusOrder.length].focus();
+      break;
+    case 'Enter':
+    case 'Return':
+      event.preventDefault();
+      if (current === closeBtn) {
+        closePhotoDialog();
+      } else if (photoItems.includes(current)) {
+        let photoIdx = photoItems.indexOf(current);
+        selectPhoto(photoIdx, photoItems[photoIdx].querySelector('img').dataset.baseUrl);
+      }
+      break;
+    case 'Escape':
+      event.preventDefault();
+      closePhotoDialog();
+      break;
+  }
+}
+
 function openSettingsDialog() {
   const dialog = document.getElementById('settings-dialog');
   dialog.style.display = 'flex';
@@ -775,12 +910,10 @@ function openPhotoDialog() {
   dialog.style.display = 'flex';
   setTimeout(() => {
     dialog.classList.add('active');
-    const firstPhoto = dialog.querySelector('.photo-item');
-    if (firstPhoto) {
-      firstPhoto.focus();
-    }
+    const closeBtn = document.getElementById('close-button');
+    closeBtn.focus();
     document.removeEventListener('keydown', handleGlobalNavigation);
-    document.addEventListener('keydown', handlePhotoNavigation);
+    document.addEventListener('keydown', handlePhotoDialogNavigation);
   }, 10);
 }
 function closePhotoDialog() {
@@ -788,7 +921,7 @@ function closePhotoDialog() {
   dialog.classList.remove('active');
   setTimeout(() => {
     dialog.style.display = 'none';
-    document.removeEventListener('keydown', handlePhotoNavigation);
+    document.removeEventListener('keydown', handlePhotoDialogNavigation);
     document.addEventListener('keydown', handleGlobalNavigation);
     document.getElementById('choose-photo-button').focus();
   }, 300);
@@ -805,86 +938,7 @@ function toggleSlideshow() {
     button.classList.add('active');
   }
 }
-function startSlideshow() {
-  if (photos.length === 0) return;
-  slideshowActive = true;
-  localStorage.setItem('slideshowActive', 'true');
-  localStorage.setItem('slideshowInterval', slideshowInterval);
-  if (slideshowTimer) clearInterval(slideshowTimer);
-  slideshowTimer = setInterval(() => {
-    if (photos.length > 0) {
-      const nextIndex = (selectedIndex + 1) % photos.length;
-      fadeToBackground(`${photos[nextIndex].baseUrl}=d`, () => {
-        selectedIndex = nextIndex;
-        localStorage.setItem('backgroundImage', `${photos[nextIndex].baseUrl}=d`);
-        localStorage.setItem('selectedPhotoIndex', nextIndex);
-        updatePhotoSelection();
-      });
-    }
-  }, slideshowInterval * 1000);
-}
-function stopSlideshow() {
-  slideshowActive = false;
-  localStorage.setItem('slideshowActive', 'false');
-  if (slideshowTimer) {
-    clearInterval(slideshowTimer);
-    slideshowTimer = null;
-  }
-}
-function updateSlideshowInterval(value) {
-  slideshowInterval = parseInt(value);
-  document.getElementById('interval-value').textContent = value;
-  localStorage.setItem('slideshowInterval', slideshowInterval);
-  if (slideshowActive) {
-    stopSlideshow();
-    startSlideshow();
-  }
-}
-function logout() {
-  localStorage.clear();
-  accessToken = null;
-  window.location.href = window.location.pathname;
-}
-function loadCachedBackground() {
-  const cachedBackground = localStorage.getItem('backgroundImage');
-  if (cachedBackground) {
-    document.body.style.backgroundImage = `url(${cachedBackground})`;
-  }
-}
-function loadSettings() {
-  const savedInterval = localStorage.getItem('slideshowInterval');
-  if (savedInterval) {
-    slideshowInterval = parseInt(savedInterval);
-    document.getElementById('slideshow-interval').value = slideshowInterval;
-    document.getElementById('interval-value').textContent = slideshowInterval;
-  }
-  const savedSlideshowState = localStorage.getItem('slideshowActive');
-  if (savedSlideshowState === 'true') {
-    const button = document.getElementById('slideshow-toggle');
-    button.textContent = 'Stop Slideshow';
-    button.classList.add('active');
-  }
-}
-function updatePhotoSelection() {
-  const photoItems = document.querySelectorAll('.photo-item');
-  photoItems.forEach((item, index) => {
-    if (index === selectedIndex) {
-      item.classList.add('selected');
-    } else {
-      item.classList.remove('selected');
-    }
-  });
-}
-function restoreSlideshowState() {
-  const savedIndex = localStorage.getItem('selectedPhotoIndex');
-  if (savedIndex) {
-    selectedIndex = parseInt(savedIndex);
-  }
-  const savedSlideshowState = localStorage.getItem('slideshowActive');
-  if (savedSlideshowState === 'true' && photos.length > 0) {
-    startSlideshow();
-  }
-}
+
 document.addEventListener('DOMContentLoaded', async () => {
   loadCachedBackground();
   updateOnlineStatus();
