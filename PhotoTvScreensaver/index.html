@@ -29,15 +29,27 @@
       background-size: cover;
       background-position: center;
       opacity: 1;
-      transition: opacity 3s linear;
+      transition: none;
     }
-    #background-fade.fade-out {
+    #black-fade-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
       opacity: 0;
-      transition: opacity 3s linear;
+      pointer-events: none;
+      z-index: 1;
+      transition: opacity 2s linear;
     }
-    #background-fade.fade-in {
+    #black-fade-overlay.fade-in {
       opacity: 1;
-      transition: opacity 3s linear;
+      transition: opacity 2s linear;
+    }
+    #black-fade-overlay.fade-out {
+      opacity: 0;
+      transition: opacity 2s linear;
     }
     #time-container {
       position: absolute;
@@ -436,6 +448,7 @@
 </head>
 <body>
   <div id="background-fade"></div>
+  <div id="black-fade-overlay"></div>
   <div id="offline-message">No internet connection</div>
   <a href="https://ymp-co.github.io/YMP_TV_Screensaver/privacy_policy.html" class="privacy-link" tabindex="0">Privacy policy</a>
   <button id="settings-button" tabindex="0">⚙</button>
@@ -500,7 +513,6 @@ const focusableElements = ['auth-button', 'choose-photo-button', 'logout-button'
 let slideshowInterval = 30;
 let slideshowActive = false;
 let slideshowTimer = null;
-let fadeDuration = 3000;
 let fadeLock = false;
 function showOfflineMessage() {
   const message = document.getElementById('offline-message');
@@ -640,20 +652,18 @@ function fadeToBackground(newUrl, callback) {
   }
   fadeLock = true;
   const fadeDiv = document.getElementById('background-fade');
-  fadeDiv.style.backgroundImage = `url(${newUrl})`;
-  fadeDiv.classList.remove('fade-out');
-  fadeDiv.classList.add('fade-in');
+  const blackFade = document.getElementById('black-fade-overlay');
+  blackFade.classList.remove('fade-out');
+  blackFade.classList.add('fade-in');
   setTimeout(() => {
-    fadeDiv.classList.remove('fade-in');
-    fadeDiv.classList.add('fade-out');
+    document.body.style.backgroundImage = `url(${newUrl})`;
+    blackFade.classList.remove('fade-in');
+    blackFade.classList.add('fade-out');
     setTimeout(() => {
-      document.body.style.backgroundImage = `url(${newUrl})`;
-      fadeDiv.classList.remove('fade-out');
-      fadeDiv.style.backgroundImage = '';
       fadeLock = false;
       if (callback) callback();
-    }, fadeDuration);
-  }, 10);
+    }, 2000);
+  }, 2000);
 }
 function selectPhoto(index, baseUrl) {
   selectedIndex = index;
