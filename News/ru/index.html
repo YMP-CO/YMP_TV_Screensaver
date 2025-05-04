@@ -1,0 +1,214 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новости | YMP TV Screensaver</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+        :root {
+            --bg-color: #050510;
+            --terminal-bg: #1a1e24;
+            --terminal-border: #2c333d;
+            --text-color: #e9ecef;
+            --accent-color: #2a6bcc;
+            --secondary-color: #CC99FE;
+            --success-color: #64d790;
+            --comment-color: #768390;
+            --project-bg: #1c2128;
+            --hover-color: #2d3440;
+            --button-color: #7a43b6;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        p, li {
+            margin-top: 10px;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+            border-top: 1px solid var(--terminal-border);
+            color: var(--comment-color);
+        }
+        footer a {
+            margin: 10px;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        body {
+            font-family: 'Fira Code', monospace;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-color: var(--bg-color);
+            background-image:
+                linear-gradient(var(--terminal-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--terminal-border) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.2;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+        .terminal {
+            background-color: var(--terminal-bg);
+            border-radius: 10px;
+            border: 1px solid var(--terminal-border);
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--terminal-border);
+        }
+        .terminal-buttons {
+            display: flex;
+            margin-right: 1rem;
+        }
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .terminal-body {
+               align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        .title {
+            font-size: 3rem;
+            font-weight: 700;
+            display: block;
+        }
+        .description-output {
+            margin-bottom: 1rem;
+        }
+        .description {
+            margin-bottom: 1.5rem;
+            max-width: 100%;
+        }
+        .btn {
+            text-align: center;
+            padding: 12px 30px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            overflow: hidden;
+            position: relative;
+        }
+        .btn-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(42, 107, 204, 0.4);
+        }
+        .btn:hover::before {
+            left: 100%;
+        }
+        .card {
+          background-color: var(--project-bg);
+          border: 1px solid var(--terminal-border);
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+          border-radius: 0; /* Прямые углы */
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+          font-size: 1.5rem;
+          color: var(--accent-color);
+          margin-bottom: 0.8rem;
+        }
+
+        .card p {
+          margin-bottom: 0.6rem;
+          color: var(--text-color);
+        }
+
+        .card small {
+          color: var(--comment-color);
+          font-size: 0.8rem;
+        }
+    </style>
+    <body>
+<div class="container">
+  <div class="terminal">
+    <div class="terminal-header">
+      <div class="terminal-buttons">
+        <div class="terminal-button close"></div>
+        <div class="terminal-button minimize"></div>
+        <div class="terminal-button maximize"></div>
+      </div>
+    </div>
+    <div class="terminal-body">
+      <h1>💠Новости приложения</h1>
+      <div class="card">
+        <h2>Самое большое обновление YMP TV Screensaver</h></h2>
+        <h3>Версия: 5.0</h3>
+        <h4>Основные изменения:</h4>
+          <ul>
+            <li><strong>🛠️ Добавлены «Настройки» для всех заставок.</strong> Теперь каждую заставку можно настраивать индивидуально:</li>
+            <ul style="margin-left: 20px;">
+              <li>☂️ Добавление <strong>виджета погоды</strong> на экран;</li>
+              <li>⌚ Настройка <strong>размера часов</strong>;</li>
+              <li>🔆 Регулировка <strong>яркости заставки</strong> для сохранения экрана;</li>
+              <li>🅰️ Возможность <strong>убрать текст дня недели</strong>.</li>
+            </ul>
+
+            <li><strong>📷 Добавлена новая заставка</strong> с возможностью выбора собственных фотографий и создания слайд-шоу.</li>
+            <li><strong>🛠️ Добавлены настройки слайд-шоу</strong> в заставке «Google Фото».</li>
+            <li><strong>⌚ Добавлена возможность выбора формата времени</strong> (12-часовой AM/PM).</li>
+            <li><strong>⏩ Часы теперь меняют своё положение каждую минуту</strong> для предотвращения выгорания экрана.</li>
+            <li><strong>☂️ Добавлен прозрачный виджет погоды</strong></li>
+            <li><strong>🎨 Обновлён визуальный стиль:</strong> теперь используется <strong>единый дизайн во всём приложении</strong>.</li>
+            <li><strong>👨‍💻 Примерно 85% кода переведено на нативную реализацию</strong> без использования HTML и CSS.</li>
+            <li><strong>🏎️ Повышена производительность</strong> приложения — почти в <strong>2 раза быстрее</strong>.</li>
+            <li><strong>🗑️ Удалены неиспользуемые ресурсы</strong> для оптимизации.</li>
+            <li><strong>💻 Вес приложения уменьшен примерно на 30%</strong>.</li>
+            <li><strong>🌳 Все заставки теперь выполнены в летней (стандартной) тематике</strong>.</li>
+          </ul>
+
+          <p>Спасибо за использование моего приложения!</p>
+        <small>Дата публикации: 4 марта 2025</small>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
